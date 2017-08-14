@@ -1,7 +1,18 @@
 <?php
-require_once(dirname(__FILE__).'/../router/Routes.php');
+require_once(dirname(__FILE__).'/../bin/routes.php');
 
-Routes::$base_route = "api/controllers";
+/*****
+Configuration variables
+******/
+
+// The default route for for the 'controllers' files
+// Defauot: "api/controllers"
+// Routes::$controller_route = "api/controllers";
+
+// The route that will list all routes. Must call showRoutes to turn this
+// functionality on.
+// Default: '_routes'
+Routes::$view_routes = '/_routes';
 
 /*****
 EXAMPLES
@@ -27,5 +38,11 @@ Routes::addResource('example');
 /*****
 END EXAMPLES
 ******/
+
+// Calling show routes will add a page using the value inRoutes::$view_routes.
+// This page will list all the routes and associated info
+// It is recommended to add logic to determine if this should be turned on.
+// i.e only call if in developement, not production.
+Routes::showRoutes();
 
 ?>

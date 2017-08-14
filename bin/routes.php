@@ -5,20 +5,14 @@ class Routes {
   Class variables
   ******/
 
+  // Default base route for controller location
+  public static $controller_route = 'api/controllers';
+  // Route that will display all routes and route info
+  public static $view_routes = '_routes';
+
   // Array of routes. Will be added to by calling addResource() or addRoute()
   // Retrive by calling getRoutes()
-  private static $routes = [
-    '/_routes' => [
-      'GET' => [
-        'controller' => 'api',
-        'function' => 'routes',
-      ],
-    ],
-  ];
-
-  // Default base route
-  public static $base_route;
-
+  private static $routes = [];
 
 
   /*******
@@ -32,16 +26,19 @@ class Routes {
 
   // Add routes by adding resource options
   public static function addResource($resource, $options=[]) {
-    self::_setDefaults($resource, $options);
-    self::_buildRoutes("", $resource, $options);
+    self::setDefaults($resource, $options);
+    self::buildRoutes("", $resource, $options);
   }
 
+  // Add an individual route
   public static function addRoute($route, $options) {
-    self::_setRoute($route, $options['method'], $options['controller'], $options['function']);
+    self::setRoute($route, $options['method'], $options['controller_route'],
+                  $options['controller'], $options['function']);
   }
 
+  // Call with the request route and request method.
+  // Will return the controller information if there is a match
   public static function findRouteMatch($route, $method) {
-    error_log("\nFIND? ".$route." ".$method, 4);
     $uri = explode('?', $_SERVER['REQUEST_URI'])[0];
     $uri = trim($uri, '//');
     $request_route = explode("/", $uri);
@@ -49,15 +46,24 @@ class Routes {
     $index = array_search('api', $request_route);
 
     // Get the request after the api route
-    $match = self::_searchRoutes($request_route, $method);
+    $match = self::searchRoutes($request_route, $method);
     return $match;
   }
 
+  // Call to show routes page
+  public static function showRoutes() {
+    self::addRoute(self::$view_routes, [
+      'method' => 'GET',
+      'controller' => 'routes',
+      'function' => 'display_routes',
+      'controller_route' => 'bin'
+    ]);
+  }
 
   /********
   * PRIVATE functions
   *********/
-  private static function _setDefaults($resource, &$options) {
+  private static function setDefaults($resource, &$options) {
     // Add the default actions if not provided
     if (!(isset($options['actions']))) {
       $options['actions'] = ["create", "index", "show", "update", "delete"];
@@ -68,44 +74,50 @@ class Routes {
       $options['controller'] = $resource;
     }
 
+    // Add the default base_route if contrller_route is not set
+    if (!(isset($options['controller_route']))) {
+      $options['controller_route'] = self::$controller_route;
+    }
+
     // If there are resources then set defaults on them
     if (isset($options['resources'])) {
       foreach ($options['resources'] as $res => &$opt) {
-        self::_setDefaults($res, $opt);
+        self::setDefaults($res, $opt);
       }
     }
   }
 
-  private static function _buildRoutes($base_route, $resource, $options) {
+  // Base route comes from nested resources
+  private static function buildRoutes($base_route, $resource, $options) {
     // Build the base routes
     foreach ($options['actions'] as $action) {
       switch ($action) {
         case 'create':
-          self::_setRoute($base_route.'/'.$resource, "POST", $options['controller'], "create");
+          self::setRoute($base_route.'/'.$resource, "POST", $options['controller_route'], $options['controller'], "create");
           break;
         case 'index':
-          self::_setRoute($base_route.'/'.$resource, "GET", $options['controller'], "index");
+          self::setRoute($base_route.'/'.$resource, "GET", $options['controller_route'], $options['controller'], "index");
           break;
         case 'show':
-          self::_setRoute($base_route.'/'.$resource."/:id", "GET", $options['controller'], "show");
+          self::setRoute($base_route.'/'.$resource."/:id", "GET", $options['controller_route'], $options['controller'], "show");
           break;
         case 'update':
-          self::_setRoute($base_route.'/'.$resource."/:id", "PUT", $options['controller'], "update");
+          self::setRoute($base_route.'/'.$resource."/:id", "PUT", $options['controller_route'], $options['controller'], "update");
           break;
         case 'delete':
-          self::_setRoute($base_route.'/'.$resource."/:id", "DELETE", $options['controller'], "delete");
+          self::setRoute($base_route.'/'.$resource."/:id", "DELETE", $options['controller_route'], $options['controller'], "delete");
       }
     }
 
     if (isset($options['resources'])) {
       foreach ($options['resources'] as $res => $opt) {
         $route = $base_route.'/'.$resource.'/:'.$resource.'_id';
-        self::_buildRoutes($route, $res, $opt);
+        self::buildRoutes($route, $res, $opt);
       }
     }
   }
 
-  private static function _setRoute($route, $method, $controller, $function) {
+  private static function setRoute($route, $method, $controller_route, $controller, $function) {
     if (!(isset(self::$routes[$route]))) {
       self::$routes[$route] = [];
     }
@@ -113,10 +125,11 @@ class Routes {
     self::$routes[$route][$method] = [
       'controller' => $controller,
       'function' => $function,
+      'controller_route' => $controller_route,
     ];
   }
 
-  private static function _searchRoutes($request_array, $method) {
+  private static function searchRoutes($request_array, $method) {
     $match = [];
 
     foreach (self::$routes as $route => $methods) {
@@ -141,6 +154,7 @@ class Routes {
         // Select controller and function
         $match['controller'] = $details['controller'];
         $match['function'] = $details['function'];
+        $match['controller_route'] = $details['controller_route'];
         // Add params
         $match['params'] = $is_match['params'];
         break;
@@ -176,5 +190,25 @@ class Routes {
     $response['found'] = true;
     return $response;
   }
+}
+
+// TO display routes as a controller
+function display_routes($params, $response) {
+  $html = '';
+
+  foreach (Routes::getRoutes() as $route => $methods) {
+    $html .= "<div style='padding-bottom: 20px;'>";
+    $html .= "<div style='font-weight: bolder;'>".$route."</div>";
+    $html .= "<table style='margin-left:20px;'>";
+    foreach ($methods as $method => $obj) {
+      $html .="<tr>";
+      $html .="<td>".$method.'</td>';
+      $html .="<td style='padding-left:15px;'>/".$obj['controller_route'].'/'.$obj['controller'].' -> '.$obj['function']."</td>";
+      $html .="</tr>";
+    }
+    $html .= "</table></div>";
+  }
+
+  echo $html;
 }
 ?>

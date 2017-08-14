@@ -8,11 +8,10 @@ function create($params, $response) {
 }
 
 function index($params, $response) {
-  error_log('INDEX',4);
   $records = [
-    [id => 1, name => "example 1"],
-    [id => 2, name => "example 2"],
-    [id => 3, name => "example 3"],
+    ["id" => 1, "name" => "example 1"],
+    ["id" => 2, "name" => "example 2"],
+    ["id" => 3, "name" => "example 3"],
   ];
 
   $response->sendJSON($records);
@@ -25,7 +24,7 @@ function show($params, $response) {
   else {
     $id = $params['id'];
     // Return the data
-    $record = [id => $id, name => "example ".$id];
+    $record = ["id" => $id, "name" => "example ".$id];
     $response->sendJSON($record);
   }
 }
@@ -44,9 +43,9 @@ function delete($params, $response) {
 
 function cheese($params, $response) {
   $list = [
-    [name => "mozzarella"],
-    [name => "swiss"],
-    [name => "cheddar"],
+    ["name" => "mozzarella"],
+    ["name" => "swiss"],
+    ["name" => "cheddar"],
   ];
 
   $response->sendJSON($list);
