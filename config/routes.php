@@ -6,14 +6,14 @@ Configuration variables
 ******/
 
 /*****
-The default route for for the 'controllers' files
+The default route for for the 'controller' files that will handle requests.
 Default: "/api/controllers"
 ******/
 // Routes::$controller_route = "/api/controllers";
 
 /*****
-The route that will list all routes. Must call showRoutes to turn this
-functionality on.
+The route which will show all routes built in /config/route.php. Must call `Routes::showRoutes`
+to turn functionality on.
 Default: '_routes'
 ******.
 // Routes::$view_routes = '/_routes';
@@ -38,7 +38,7 @@ Routes::addResource('example');
 //   controller: file name of handling php file. will be appended to $controller_route
 //              Default controller is {resource}.php
 //   controller_route: a specific controller route besides the default
-//   resources: creates nested routes. Object Has same options (actions, controlelr, controller_route)
+//   resources: creates nested routes. Object Has same options (actions, controller, controller_route)
 Routes::addResource("parent", [
 	"actions" => ["index", "show"],
 	"resources" => [
