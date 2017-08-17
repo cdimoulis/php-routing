@@ -2,7 +2,7 @@
 // Response provides quick functions to send request responses
 class Response {
 
-  // Send the $data as JSON as success
+  // Respond with $data as JSON with 200 status
   public function sendJSON($data) {
     self::sendJSONwithStatus($data, 200);
   }
@@ -14,7 +14,7 @@ class Response {
     echo json_encode($data);
   }
 
-  // Render php file at $view with $data available on page
+  // Render php file at $view with $data available to use on page
   public function sendView($view, $data) {
     if (file_exists(dirname(__FILE__).'/..'.$view)) {
       require_once(dirname(__FILE__).'/..'.$view);
