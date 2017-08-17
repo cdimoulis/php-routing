@@ -20,13 +20,13 @@ class Router {
   /*
   * Private class variables
   */
-  private static $standard_methods = [
-    "POST" => "create",
-    "GET" => "index",
-    "PUT" => "update",
-    "PATCH" => "update",
-    "DELETE" => "delete",
-  ];
+  // private static $standard_methods = [
+  //   "POST" => "create",
+  //   "GET" => "index",
+  //   "PUT" => "update",
+  //   "PATCH" => "update",
+  //   "DELETE" => "delete",
+  // ];
 
 
 
@@ -36,30 +36,20 @@ class Router {
   public static function handleRequest() {
     $match = Routes::findRouteMatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
 
-    if (count($match) == 0) {
-      return self::handleNoMatch();
-    }
-    else {
-      return self::handleMatch($match);
-    }
+    if (count($match) == 0) return self::handleNoMatch();
+    else return self::handleMatch($match);
   }
 
   /*******
   Handle requests that match a route
   ********/
   private static function handleMatch($match) {
-    $response = new Response();
     $body_params = json_decode(file_get_contents('php://input'), true);
-    if (!$body_params) {
-      $merged_params = $_GET;
-    }
-    else {
-      $merged_params = array_merge($_GET, $body_params);
-    }
-    require_once(dirname(__FILE__).'/../'.$match['controller_route'].'/'.$match['controller'].".php");
-    call_user_func($match['function'],
-                  array_merge($merged_params, $match['params']),
-                  $response);
+
+    if (!$body_params) $merged_params = $_GET;
+    else $merged_params = array_merge($_GET, $body_params);
+
+    self::sendToController($match, $merged_params);
   }
 
   /*******
@@ -67,11 +57,33 @@ class Router {
   ********/
   private static function handleNoMatch() {
     $response = new Response();
-    if (self::$full_routing) {
+    // If $full_routing is true then all routes go through the router so respond 404
+    if (self::$full_routing) $response->sendJSONwithStatus(['error' => "Route not found"], 404);
+    else return false;
+  }
+
+  /*******
+  Get the controller and call the appropriate function
+  ********/
+  private static function sendToController($match, $params) {
+    $response = new Response();
+    try {
+      if (! @include_once(dirname(__FILE__).'/..'.$match['controller_route'].'/'.$match['controller'].".php"))
+        throw new Exception('Controller does not exist');
+    }
+    catch(Exception $e) {
       $response->sendJSONwithStatus(['error' => "Route not found"], 404);
+      return;
+    }
+
+    if (function_exists($match['function'])) {
+      call_user_func($match['function'],
+                    array_merge($params, $match['params']),
+                    $response);
     }
     else {
-      return false;
+      $response->sendJSONwithStatus(['error' => "Route not found"], 404);
+      return;
     }
   }
 }

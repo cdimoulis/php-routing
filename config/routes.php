@@ -29,11 +29,11 @@ Routes::addResource('example');
 // 	]
 // ]);
 
-// Routes::addRoute('/owners/:owners_id/cars', [
-// 	'method' => 'POST',
-// 	'controller' => 'owners',
-// 	'function' => 'createCar'
-// ]);
+Routes::addRoute('/people', [
+	'method' => 'GET',
+	'controller' => 'example',
+	'function' => 'chicken'
+]);
 
 /*****
 END EXAMPLES

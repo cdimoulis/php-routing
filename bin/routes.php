@@ -6,14 +6,13 @@ class Routes {
   ******/
 
   // Default base route for controller location
-  public static $controller_route = 'api/controllers';
+  public static $controller_route = '/api/controllers';
   // Route that will display all routes and route info
   public static $view_routes = '_routes';
 
   // Array of routes. Will be added to by calling addResource() or addRoute()
   // Retrive by calling getRoutes()
   private static $routes = [];
-
 
   /*******
   PUBLIC functions for adding and searching routes
@@ -26,12 +25,13 @@ class Routes {
 
   // Add routes by adding resource options
   public static function addResource($resource, $options=[]) {
-    self::setDefaults($resource, $options);
+    self::setResourceDefaults($resource, $options);
     self::buildRoutes("", $resource, $options);
   }
 
   // Add an individual route
   public static function addRoute($route, $options) {
+    self::setRouteDefaults($route, $options);
     self::setRoute($route, $options['method'], $options['controller_route'],
                   $options['controller'], $options['function']);
   }
@@ -56,17 +56,17 @@ class Routes {
       'method' => 'GET',
       'controller' => 'routes',
       'function' => 'display_routes',
-      'controller_route' => 'bin'
+      'controller_route' => '/bin'
     ]);
   }
 
   /********
   * PRIVATE functions
   *********/
-  private static function setDefaults($resource, &$options) {
+  private static function setResourceDefaults($resource, &$options) {
     // Add the default actions if not provided
     if (!(isset($options['actions']))) {
-      $options['actions'] = ["create", "index", "show", "update", "delete"];
+      $options['actions'] = ["new", "create", "index", "show", "edit", "update", "delete"];
     }
 
     // Add the default controller if not provided
@@ -82,8 +82,20 @@ class Routes {
     // If there are resources then set defaults on them
     if (isset($options['resources'])) {
       foreach ($options['resources'] as $res => &$opt) {
-        self::setDefaults($res, $opt);
+        self::setResourceDefaults($res, $opt);
       }
+    }
+  }
+
+  private static function setRouteDefaults($route, &$options) {
+    // Add the default controller if not provided
+    if (!(isset($options['controller']))) {
+      $options['controller'] = explode('/', $route)[1];
+    }
+
+    // Add the default base_route if contrller_route is not set
+    if (!(isset($options['controller_route']))) {
+      $options['controller_route'] = self::$controller_route;
     }
   }
 
@@ -92,6 +104,9 @@ class Routes {
     // Build the base routes
     foreach ($options['actions'] as $action) {
       switch ($action) {
+        case 'new':
+          self::setRoute($base_route.'/'.$resource.'/new', "GET", $options['controller_route'], $options['controller'], "new");
+          break;
         case 'create':
           self::setRoute($base_route.'/'.$resource, "POST", $options['controller_route'], $options['controller'], "create");
           break;
@@ -100,6 +115,9 @@ class Routes {
           break;
         case 'show':
           self::setRoute($base_route.'/'.$resource."/:id", "GET", $options['controller_route'], $options['controller'], "show");
+          break;
+        case 'edit':
+          self::setRoute($base_route.'/'.$resource.'/edit', "GET", $options['controller_route'], $options['controller'], "edit");
           break;
         case 'update':
           self::setRoute($base_route.'/'.$resource."/:id", "PUT", $options['controller_route'], $options['controller'], "update");
@@ -203,12 +221,13 @@ function display_routes($params, $response) {
     foreach ($methods as $method => $obj) {
       $html .="<tr>";
       $html .="<td>".$method.'</td>';
-      $html .="<td style='padding-left:15px;'>/".$obj['controller_route'].'/'.$obj['controller'].' -> '.$obj['function']."</td>";
+      $html .="<td style='padding-left:15px;'>".$obj['controller_route'].'/'.$obj['controller'].' -> '.$obj['function']."</td>";
       $html .="</tr>";
     }
     $html .= "</table></div>";
   }
 
   echo $html;
+  return;
 }
 ?>
