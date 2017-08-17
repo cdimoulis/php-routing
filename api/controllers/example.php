@@ -40,15 +40,19 @@ function delete($params, $response) {
 * END BASIC CRUD OPS
 ******/
 
-
-function cheese($params, $response) {
-  $list = [
-    ["name" => "mozzarella"],
-    ["name" => "swiss"],
-    ["name" => "cheddar"],
+// return view
+function example_view($params, $response) {
+  $data = [
+    "title" => "My Examples",
+    "description" => "A php rendered page",
+    "records" => [
+      ["id" => 1, "name" => "example 1"],
+      ["id" => 2, "name" => "example 2"],
+      ["id" => 3, "name" => "example 3"],
+    ]
   ];
 
-  $response->sendJSON($list);
+  $response->sendView('/pages/example/index.php', $data);
 }
 
 ?>

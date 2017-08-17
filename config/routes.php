@@ -18,26 +18,34 @@ Routes::$view_routes = '/_routes';
 EXAMPLES
 ******/
 
+// All routes according to defaults
 Routes::addResource('example');
 
-// Routes::addResource("people", [
-// 	"actions" => ["create", "index", "update", "show"]//,
-// 	"resources" => [
-// 		"cars" => [
-// 			"actions" => ["create", "index", "update", "show"]
-// 		]
-// 	]
-// ]);
+// Only particular actions also nested resource
+// NO CONTROLLER OR METHODS. THIS IS SIMPLY TO SHOW ROUTE EXAMPLES
+// View '/_routes' uri (or $view_routes route if changed from default)
+Routes::addResource("parent", [
+	"actions" => ["index", "show"],
+	"resources" => [
+		"child" => [
+			"actions" => ["create", "index", "update", "show"]
+		]
+	]
+]);
 
-Routes::addRoute('/people', [
+// Route points to function that returns view
+Routes::addRoute('/my_example', [
 	'method' => 'GET',
 	'controller' => 'example',
-	'function' => 'chicken'
+	'function' => 'example_view'
 ]);
 
 /*****
 END EXAMPLES
 ******/
+
+
+
 
 // Calling show routes will add a page using the value inRoutes::$view_routes.
 // This page will list all the routes and associated info

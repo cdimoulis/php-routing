@@ -16,20 +16,6 @@ class Router {
 
   // public static $page_404 = "404.php";
 
-
-  /*
-  * Private class variables
-  */
-  // private static $standard_methods = [
-  //   "POST" => "create",
-  //   "GET" => "index",
-  //   "PUT" => "update",
-  //   "PATCH" => "update",
-  //   "DELETE" => "delete",
-  // ];
-
-
-
   /********
   Handle all incoming requests
   *********/
