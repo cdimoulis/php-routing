@@ -8,6 +8,12 @@ You must keep the folders:
 And file
 * init.php
 
+### For testing and examples
+For the purposes of testing and learning this repo is a complete working PHP app. Assuming PHP is installed simply run `start.sh` in the root directory. This uses the built in PHP server. This server uses the `/dev.ini` file. Feel free to edit if you wish to use your in ini file. Also this file causes all requests to be initially routed to `/init.php`.
+
+### Setup with other server
+However you chose to server your site all that is requied to use routing is that all requests initially be routed through `/init.php`.
+
 ### Configuration
 Configuration is done in the /config directory.
 
